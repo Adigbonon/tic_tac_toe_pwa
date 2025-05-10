@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:google_fonts/google_fonts.dart';
 import '../logic/game_controller.dart';
 import '../models/game_mode.dart';
+import '../widgets/AudioService.dart';
 import '../widgets/FireText.dart';
 
 class HomeView extends ConsumerStatefulWidget {
@@ -17,6 +17,20 @@ class _HomeViewState extends ConsumerState<HomeView> {
   GameMode? _selectedMode;
   AIDifficulty _selectedDifficulty = AIDifficulty.easy;
   bool _blitzMode = false;
+
+  @override
+  void initState() {
+    super.initState();
+
+    // Jouer un son d'ambiance dès l'ouverture de la page
+    AudioService.loop('sounds/home.mp3');
+  }
+
+  @override
+  void dispose() {
+    //AudioService.stop();
+    super.dispose();
+  }
 
   void _startGame() {
     if (_selectedMode != null) {
@@ -55,36 +69,51 @@ class _HomeViewState extends ConsumerState<HomeView> {
                       value: GameMode.vsAI,
                       label: Text(
                         "Contre l'IA",
-                        style: GoogleFonts.pressStart2p(fontSize: 10),
+                        style: TextStyle(
+                            fontFamily: 'PressStart2P',
+                            fontSize: 10
+                        )
                       ),
                     ),
                     ButtonSegment(
                       value: GameMode.vsFriend,
                       label: Text(
                         "Contre un ami",
-                        style: GoogleFonts.pressStart2p(fontSize: 10),
+                        style: TextStyle(
+                            fontFamily: 'PressStart2P',
+                            fontSize: 10
+                        )
                       ),
                     ),
                   ],
                   selected: _selectedMode != null ? {_selectedMode!} : {},
                   emptySelectionAllowed: true,
-                  onSelectionChanged: (s) => setState(() => _selectedMode = s.first),
+                  onSelectionChanged: (s) =>
+                      setState(() => _selectedMode = s.first),
                   style: ButtonStyle(
                     shape: MaterialStateProperty.all(RoundedRectangleBorder(
                       borderRadius: BorderRadius.zero, // ✅ carré
                       side: const BorderSide(color: Colors.white, width: 2),
                     )),
-                    backgroundColor: MaterialStateProperty.resolveWith((states) {
+                    backgroundColor:
+                        MaterialStateProperty.resolveWith((states) {
                       if (states.contains(MaterialState.selected)) {
-                        return Colors.orange.shade800; // ✅ fond actif pixel-style
+                        return Colors
+                            .orange.shade800; // ✅ fond actif pixel-style
                       }
                       return Colors.black;
                     }),
                     foregroundColor: MaterialStateProperty.all(Colors.white),
-                    overlayColor: MaterialStateProperty.all(Colors.deepOrange.shade200.withOpacity(0.2)),
-                    padding: MaterialStateProperty.all(const EdgeInsets.symmetric(vertical: 10, horizontal: 12)),
+                    overlayColor: MaterialStateProperty.all(
+                        Colors.deepOrange.shade200.withOpacity(0.2)),
+                    padding: MaterialStateProperty.all(
+                        const EdgeInsets.symmetric(
+                            vertical: 10, horizontal: 12)),
                     textStyle: MaterialStateProperty.all(
-                      GoogleFonts.pressStart2p(fontSize: 8),
+                        TextStyle(
+                            fontFamily: 'PressStart2P',
+                            fontSize: 8
+                        )
                     ),
                   ),
                 ),
@@ -95,10 +124,11 @@ class _HomeViewState extends ConsumerState<HomeView> {
                   children: [
                     Text(
                       "Niveau de difficulté",
-                      style: GoogleFonts.pressStart2p(
-                        fontSize: 15,
-                        color: Colors.white,
-                      ),
+                      style: TextStyle(
+                          fontFamily: 'PressStart2P',
+                          fontSize: 15,
+                        color: Colors.white
+                      )
                     ),
                     const SizedBox(height: 12),
                     SizedBox(
@@ -107,36 +137,59 @@ class _HomeViewState extends ConsumerState<HomeView> {
                         segments: [
                           ButtonSegment(
                             value: AIDifficulty.easy,
-                            label: Text("Facile", style: GoogleFonts.pressStart2p(fontSize: 10)),
+                            label: Text("Facile",
+                                style:TextStyle(
+                                    fontFamily: 'PressStart2P',
+                                    fontSize: 10
+                                )),
                           ),
                           ButtonSegment(
                             value: AIDifficulty.medium,
-                            label: Text("Moyen", style: GoogleFonts.pressStart2p(fontSize: 10)),
+                            label: Text("Moyen",
+                                style: TextStyle(
+                                    fontFamily: 'PressStart2P',
+                                    fontSize: 10
+                                )),
                           ),
                           ButtonSegment(
                             value: AIDifficulty.hard,
-                            label: Text("Difficile", style: GoogleFonts.pressStart2p(fontSize: 8)),
+                            label: Text("Difficile",
+                                style: TextStyle(
+                                    fontFamily: 'PressStart2P',
+                                    fontSize: 8
+                                )),
                           ),
                         ],
                         selected: {_selectedDifficulty},
-                        onSelectionChanged: (s) => setState(() => _selectedDifficulty = s.first),
+                        onSelectionChanged: (s) =>
+                            setState(() => _selectedDifficulty = s.first),
                         style: ButtonStyle(
                           shape: MaterialStateProperty.all(
                             RoundedRectangleBorder(
                               borderRadius: BorderRadius.zero, // 👾 carré
-                              side: const BorderSide(color: Colors.white, width: 2),
+                              side: const BorderSide(
+                                  color: Colors.white, width: 2),
                             ),
                           ),
-                          backgroundColor: MaterialStateProperty.resolveWith((states) {
+                          backgroundColor:
+                              MaterialStateProperty.resolveWith((states) {
                             if (states.contains(MaterialState.selected)) {
                               return Colors.blue; // ✅ fond pixelisé actif
                             }
                             return Colors.black;
                           }),
-                          foregroundColor: MaterialStateProperty.all(Colors.white),
-                          overlayColor: MaterialStateProperty.all(Colors.orangeAccent.withOpacity(0.2)),
-                          padding: MaterialStateProperty.all(const EdgeInsets.symmetric(horizontal: 12, vertical: 10)),
-                          textStyle: MaterialStateProperty.all(GoogleFonts.pressStart2p(fontSize: 8)),
+                          foregroundColor:
+                              MaterialStateProperty.all(Colors.white),
+                          overlayColor: MaterialStateProperty.all(
+                              Colors.orangeAccent.withOpacity(0.2)),
+                          padding: MaterialStateProperty.all(
+                              const EdgeInsets.symmetric(
+                                  horizontal: 12, vertical: 10)),
+                          textStyle: MaterialStateProperty.all(
+                               TextStyle(
+                                fontFamily: 'PressStart2P',
+                                fontSize: 8
+                              )),
                         ),
                       ),
                     )
@@ -146,13 +199,12 @@ class _HomeViewState extends ConsumerState<HomeView> {
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Text(
-                    "Mode Blitz 5s ⏱️",
-                    style: GoogleFonts.pressStart2p(
-                      fontSize: 14,
-                      color: Colors.white,
-                    ),
-                  ),
+                  Text("Mode Blitz 5s ⏱️",
+                      style: TextStyle(
+                        fontFamily: 'PressStart2P',
+                        fontSize: 14,
+                        color: Colors.white,
+                      )),
                   const SizedBox(width: 16),
                   ElevatedButton(
                     onPressed: () {
@@ -161,18 +213,21 @@ class _HomeViewState extends ConsumerState<HomeView> {
                       });
                     },
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: _blitzMode ? Colors.purple : Colors.black,
+                      backgroundColor:
+                          _blitzMode ? Colors.purple : Colors.black,
                       foregroundColor: Colors.white,
-                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 12, vertical: 8),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.zero,
                         side: const BorderSide(color: Colors.white, width: 2),
                       ),
                     ),
-                    child: Text(
-                      _blitzMode ? "ON" : "OFF",
-                      style: GoogleFonts.pressStart2p(fontSize: 10),
-                    ),
+                    child: Text(_blitzMode ? "ON" : "OFF",
+                        style: TextStyle(
+                          fontFamily: 'PressStart2P',
+                          fontSize: 10,
+                        )),
                   ),
                 ],
               ),
@@ -182,18 +237,19 @@ class _HomeViewState extends ConsumerState<HomeView> {
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.lightGreen,
                   foregroundColor: Colors.white,
-                  padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.zero,
                     side: const BorderSide(color: Colors.white, width: 2),
                   ),
                 ),
-                child: Text(
-                  "▶ COMMENCER",
-                  style: GoogleFonts.pressStart2p(fontSize: 10),
-                ),
+                child: Text("▶ COMMENCER",
+                    style: TextStyle(
+                      fontFamily: 'PressStart2P',
+                      fontSize: 10,
+                    )),
               ),
-
             ],
           ),
         ),

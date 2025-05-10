@@ -1,18 +1,57 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:google_fonts/google_fonts.dart';
 import '../logic/game_controller.dart';
 import '../models/game_mode.dart';
+import '../widgets/AudioService.dart';
 import '../widgets/board_widget.dart';
 
-class GameView extends ConsumerWidget {
+class GameView extends ConsumerStatefulWidget {
   const GameView({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<GameView> createState() => _GameViewState();
+}
+
+class _GameViewState extends ConsumerState<GameView> {
+  bool _playedEndSound = false;
+
+  @override
+  void initState() {
+    super.initState();
+    AudioService.loop("sounds/start_game.mp3");
+  }
+
+  @override
+  void dispose() {
+    AudioService.stop();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final game = ref.watch(gameControllerProvider);
     final controller = ref.read(gameControllerProvider.notifier);
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (game.isGameOver && !_playedEndSound) {
+        _playedEndSound = true;
+        AudioService.stop();
+
+        if (game.winner == 'X') {
+          AudioService.play('sounds/winneris.mp3');
+        } else if (game.winner == 'O') {
+          AudioService.play('sounds/lost.mp3');
+        } else if (game.winner == null || game.winner!.isEmpty) {
+          AudioService.play('sounds/credits.mp3');
+        }
+      }
+
+      // Remet le flag à false quand une nouvelle partie commence
+      if (!game.isGameOver && _playedEndSound) {
+        _playedEndSound = false;
+      }
+    });
 
     return Scaffold(
         backgroundColor: Colors.transparent,
@@ -20,10 +59,11 @@ class GameView extends ConsumerWidget {
           backgroundColor: Colors.black,
           title: Text(
             "Tic Tac Toe",
-            style: GoogleFonts.pressStart2p(
-              fontSize: 16,
-              color: Colors.white,
-            ),
+            style: TextStyle(
+                fontFamily: 'PressStart2P',
+                fontSize: 16,
+              color: Colors.white
+            )
           ),
           centerTitle: true,
           actions: [
@@ -31,50 +71,59 @@ class GameView extends ConsumerWidget {
               icon: const Icon(Icons.refresh),
               tooltip: "Rejouer",
               color: Colors.blueGrey,
-              onPressed: () => controller.resetGame(),
+              onPressed: () {
+                AudioService.stop();
+                AudioService.play('sounds/click.wav');
+                controller.resetGame();
+              },
             ),
             IconButton(
               icon: const Icon(Icons.exit_to_app),
               color: Colors.blueGrey,
               tooltip: "Retour à l’accueil",
               onPressed: () async {
+                AudioService.play('sounds/click.wav');
                 final confirm = await showDialog<bool>(
                   context: context,
                   builder: (context) => AlertDialog(
                     backgroundColor: Colors.black,
                     title: Text(
                       'Retour à l’accueil ?',
-                      style: GoogleFonts.pressStart2p(
-                        fontSize: 14,
-                        color: Colors.white,
-                      ),
+                      style: TextStyle(
+                          fontFamily: 'PressStart2P',
+                          fontSize: 14,
+                          color: Colors.white
+                      )
                     ),
                     content: Text(
                       'La partie en cours sera perdue.',
-                      style: GoogleFonts.pressStart2p(
-                        fontSize: 14,
-                        color: Colors.redAccent,
-                      ),
+                      style: TextStyle(
+                          fontFamily: 'PressStart2P',
+                          fontSize: 14,
+                          color: Colors.redAccent
+                      )
                     ),
                     actions: [
                       TextButton(
                         onPressed: () => Navigator.of(context).pop(false),
                         child: Text(
                           'Annuler',
-                          style: GoogleFonts.pressStart2p(
-                            fontSize: 14,
-                            color: Colors.green,
-                          ),
+                          style: TextStyle(
+                              fontFamily: 'PressStart2P',
+                              fontSize: 14,
+                              color: Colors.green
+                          )
                         ),
                       ),
                       TextButton(
                         onPressed: () => Navigator.of(context).pop(true),
                         child: Text(
                           'Confirmer',
-                          style: GoogleFonts.pressStart2p(
-                            fontSize: 14,
-                            color: Colors.red,
-                          ),
+                          style: TextStyle(
+                              fontFamily: 'PressStart2P',
+                              fontSize: 14,
+                              color: Colors.red
+                          )
                         ),
                       ),
                     ],
@@ -103,9 +152,10 @@ class GameView extends ConsumerWidget {
               ),
             ],
             Text("Parties gagnées contre l'IA : ${game.playerScore}",
-                style: GoogleFonts.pressStart2p(
-                  fontSize: 12,
-                  color: Colors.white,
+                style: TextStyle(
+                    fontFamily: 'PressStart2P',
+                    fontSize: 12,
+                    color: Colors.white
                 )),
             const SizedBox(height: 3),
             game.mode == GameMode.vsAI ? ElevatedButton.icon(
@@ -113,9 +163,10 @@ class GameView extends ConsumerWidget {
               icon: const Icon(Icons.delete_outline, size: 16),
               label: Text(
                 "RESET SCORE",
-                style: GoogleFonts.pressStart2p(
-                  fontSize: 9,
-                  color: Colors.white,
+                style: TextStyle(
+                    fontFamily: 'PressStart2P',
+                    fontSize: 9,
+                    color: Colors.white
                 ),
               ),
               style: ElevatedButton.styleFrom(
@@ -153,9 +204,10 @@ class GameView extends ConsumerWidget {
                             : "🤖 Tour de l'IA (⭕)")
                         : "Tour de : ${game.xTurn ? '❌' : '⭕'}",
                 key: ValueKey(game.winner ?? game.xTurn),
-                style: GoogleFonts.pressStart2p(
-                  fontSize: 15,
-                  color: Colors.red,
+                style: TextStyle(
+                    fontFamily: 'PressStart2P',
+                    fontSize: 15,
+                    color: Colors.red
                 ),
               ),
             ),
@@ -185,24 +237,32 @@ class GameView extends ConsumerWidget {
                 children: [
                   ElevatedButton.icon(
                     onPressed: game.powers.undoAvailable
-                        ? () => controller.useUndo()
+                        ? () {
+                      AudioService.play('sounds/click.wav');
+                      controller.useUndo();
+                    }
                         : null,
                     icon: const Icon(Icons.undo),
                     label: Text("Annuler",
-                        style: GoogleFonts.pressStart2p(
-                          fontSize: 9,
-                          color: Colors.blueGrey,
+                        style:TextStyle(
+                            fontFamily: 'PressStart2P',
+                            fontSize: 9,
+                            color: Colors.blueGrey
                         )),
                   ),
                   ElevatedButton.icon(
                     onPressed: game.powers.doublePlayAvailable
-                        ? () => controller.useDoublePlay()
+                        ? () {
+                      AudioService.play('sounds/click.wav');
+                      controller.useDoublePlay();
+                    }
                         : null,
                     icon: const Icon(Icons.looks_two),
                     label: Text("Double coup",
-                        style: GoogleFonts.pressStart2p(
-                          fontSize: 9,
-                          color: Colors.blueGrey,
+                        style: TextStyle(
+                            fontFamily: 'PressStart2P',
+                            fontSize: 9,
+                            color: Colors.blueGrey
                         )),
                   ),
                 ],
