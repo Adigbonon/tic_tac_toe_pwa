@@ -24,7 +24,7 @@ class _GameViewState extends ConsumerState<GameView> {
 
   @override
   void dispose() {
-    AudioService.stop();
+    //AudioService.stop();
     super.dispose();
   }
 
@@ -72,7 +72,7 @@ class _GameViewState extends ConsumerState<GameView> {
               tooltip: "Rejouer",
               color: Colors.blueGrey,
               onPressed: () {
-                AudioService.stop();
+                //AudioService.stop();
                 AudioService.play('sounds/click.wav');
                 controller.resetGame();
               },
